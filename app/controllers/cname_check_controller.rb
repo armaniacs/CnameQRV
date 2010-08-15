@@ -1,4 +1,6 @@
 class CnameCheckController < ApplicationController
+  include ApplicationHelper
+
   def request_fetch
     result = Net::HTTP.get('localhost','/json/cname/all', 8080)
 
@@ -17,13 +19,17 @@ class CnameCheckController < ApplicationController
   def ip
     s1 = ''
     @tip = params['ip']
-    headers = {
-      'Host'=>'cdn.debian.net',
-      'User-Agent' => 'Debian-cdn-cname-ping/0.1'
-    }
-    result = Net::HTTP.start(@tip) do |h|
-      s1 = h.get('/debian/project/trace/ftp-master.debian.org', headers).body
+    if @tip && ip_format_check(@tip)
+      headers = {
+        'Host'=>'cdn.debian.net',
+        'User-Agent' => 'Debian-cdn-cname-ping/0.1'
+      }
+      result = Net::HTTP.start(@tip) do |h|
+        s1 = h.get('/debian/project/trace/ftp-master.debian.org', headers).body
+      end
+      render :text => s1
+    else
+      render :text => "fail", :status => 404
     end
-    render :text => s1
   end
 end
